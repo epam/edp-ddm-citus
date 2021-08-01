@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: excerpt-db
+data:
+  create_excerpt_db_on_master.sql:
+{{ (.Files.Glob "files/create_excerpt_db_on_master.sql").AsConfig | indent 2 }}

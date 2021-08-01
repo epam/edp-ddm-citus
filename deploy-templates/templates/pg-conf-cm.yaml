@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgconfig
+data:
+{{ (.Files.Glob "files/postgresql.conf").AsConfig | indent 2 }}
+{{ (.Files.Glob "files/pg_hba.conf").AsConfig | indent 2 }}

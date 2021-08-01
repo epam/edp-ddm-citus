@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: all-other-on-master-db
+data:
+  create_all_others_on_master.sql:
+{{ (.Files.Glob "files/create_all_others_on_master.sql").AsConfig | indent 2 }}

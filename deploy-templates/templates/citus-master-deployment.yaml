@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.master.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.master.name }}
+  replicas: {{ .Values.master.replicas }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes: {{ .Values.master.volumes.name }}
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: {{ .Values.master.name }}
+    spec:
+      initContainers:
+        - name: init-chown-data
+          image: {{ template "dockerProxyRegistry" . -}} busybox
+          command: [ 'sh', '-c', 'chmod 0700 -R /data/pgdata || true' ]
+          volumeMounts:
+            - name: {{ .Values.master.volumes.name }}
+              mountPath: /data
+      containers:
+      - name: {{ .Values.master.containers.name }}
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+        image: {{ template "dockerProxyRegistry" . -}} {{ .Values.master.containers.image }}
+        imagePullPolicy: IfNotPresent
+        command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+        ports:
+        - containerPort: {{ .Values.master.containers.port }}
+        env:
+        - name: PSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.master.containers.env.pgsecret_name }}
+              key: {{ .Values.master.containers.env.user_name }}
+        - name: PGDATA
+          value: {{ .Values.master.containers.env.pgdata_value }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.master.containers.env.pgsecret_name }}
+              key: {{ .Values.master.containers.env.pgsecret_key }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.master.containers.env.pgsecret_name }}
+              key: {{ .Values.master.containers.env.pgsecret_key }}
+        - name: PGTZ
+          value: {{ .Values.database.timezone }}
+        volumeMounts:
+        - name: {{ .Values.master.containers.volumeMounts.name }}
+          mountPath: {{ .Values.master.containers.volumeMounts.mountPath }}
+        - name: pg-conf
+          mountPath: /etc/postgresql
+        livenessProbe:
+          exec:
+            command:
+            - ./pg_healthcheck
+          initialDelaySeconds: 60
+      volumes:
+        - name: {{ .Values.master.volumes.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.master.volumes.claimName }}
+        - name: pg-conf
+          configMap:
+            name: pgconfig
+        - name: citus-create-roles
+          configMap:
+            name: citus-create-roles

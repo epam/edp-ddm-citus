@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.workersReplica.containers.node_name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.workersReplica.name }}
+  serviceName: {{ .Values.workersReplica.name }}
+  replicas: {{ .Values.workersReplica.replicas }}
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes: {{ .Values.workersReplica.volumes.name }}
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: {{ .Values.workersReplica.name }}
+    spec:
+      initContainers:
+        - name: init-chown-data
+          image: {{ template "dockerProxyRegistry" . -}} busybox
+          command:
+            - sh
+            - '-c'
+            - >-
+              chmod 0700 -R /data/pgdata || true;
+              while ! nc -w 1 {{ .Values.masterReplica.name }} {{ .Values.masterReplica.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+          volumeMounts:
+            - name: {{ .Values.workersReplica.volumes.name }}
+              mountPath: /data
+      containers:
+      - name: {{ .Values.workersReplica.containers.node_name }}
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+        image: {{ template "dockerProxyRegistry" . -}} {{ .Values.workersReplica.containers.image }}
+        imagePullPolicy: IfNotPresent
+        command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+        ports:
+        - containerPort: {{ .Values.workersReplica.containers.port }}
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: PSQL_USER  
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.masterReplica.containers.env.user_name }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
+        - name: PGDATA
+          value: {{ .Values.workersReplica.containers.env.pgdata_value }}
+        volumeMounts:
+        - name: {{ .Values.workersReplica.containers.volumeMounts.name }}
+          mountPath: {{ .Values.workersReplica.containers.volumeMounts.mountPath }}
+        - name: pg-conf
+          mountPath: /etc/postgresql
+        livenessProbe:
+          exec:
+            command:
+            - ./pg_healthcheck
+          initialDelaySeconds: 60
+      - name: {{ .Values.workersReplica.containers.node_name }}-sidecar
+        image: {{ template "dockerProxyRegistry" . -}} {{ .Values.workersReplica.containers.image }}
+        imagePullPolicy: IfNotPresent
+        command:
+          - 'sh'
+          - '-c'
+          - | 
+            while ! ./pg_healthcheck; do echo pg not ready; sleep 20; done ; psql --host={{ .Values.masterReplica.name }} --username=${PSQL_USER} --command="SELECT * from master_add_node('${HOSTNAME}.{{ .Values.workersReplica.name }}', {{ .Values.workersReplica.containers.port }});" ; while true; do trap : TERM INT; sleep 9999999999d & wait ; done
+        ports:
+        - containerPort: {{ .Values.workersReplica.containers.port }}
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: PSQL_USER  
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.masterReplica.containers.env.user_name }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
+        - name: PGDATA
+          value: {{ .Values.workersReplica.containers.env.pgdata_value }}
+        volumeMounts:
+        - name: pg-conf
+          mountPath: /etc/postgresql
+      volumes:
+        - name: pg-conf
+          configMap:
+            name: pgconfig
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.workersReplica.volumes.name }}
+    spec:
+      storageClassName: {{ .Values.storageClass }}
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.workersReplica.volumes.size }}

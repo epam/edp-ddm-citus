@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.masterReplica.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.masterReplica.name }}
+  replicas: {{ .Values.masterReplica.replicas }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes: {{ .Values.masterReplica.volumes.name }}
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: {{ .Values.masterReplica.name }}
+    spec:
+      initContainers:
+        - name: init-chown-data
+          image: {{ template "dockerProxyRegistry" . -}} busybox
+          command: [ 'sh', '-c', 'chmod 0700 -R /data/pgdata || true' ]
+          volumeMounts:
+            - name: {{ .Values.masterReplica.volumes.name }}
+              mountPath: /data
+      containers:
+      - name: {{ .Values.masterReplica.containers.name }}
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+        image: {{ template "dockerProxyRegistry" . -}} {{ .Values.masterReplica.containers.image }}
+        imagePullPolicy: IfNotPresent
+        command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+        ports:
+        - containerPort: {{ .Values.masterReplica.containers.port }}
+        env:
+        - name: PGDATA
+          value: {{ .Values.masterReplica.containers.env.pgdata_value }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
+              key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
+        - name: PGTZ
+          value: {{ .Values.database.timezone }}
+        volumeMounts:
+        - name: {{ .Values.masterReplica.containers.volumeMounts.name }}
+          mountPath: {{ .Values.masterReplica.containers.volumeMounts.mountPath }}
+        - name: pg-conf
+          mountPath: /etc/postgresql
+        livenessProbe:
+          exec:
+            command:
+            - ./pg_healthcheck
+          initialDelaySeconds: 60
+      volumes:
+        - name: {{ .Values.masterReplica.volumes.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.masterReplica.volumes.claimName }}
+        - name: pg-conf
+          configMap:
+            name: pgconfig
