@@ -99,5 +99,5 @@ storageClass: gp2
 
 resources:
   requests:
-    cpu: 50m
-    memory: 512Mi
+    cpu: 100m
+    memory: 1Gi
