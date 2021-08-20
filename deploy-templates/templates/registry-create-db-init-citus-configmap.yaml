@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-create-db-init-citus
+data:
+  registry_db__create_db_and_init_citus.sql:
+{{ (.Files.Glob "sql-scripts-on-stage/registry_db__create_db_and_init_citus.sql").AsConfig | indent 2 }}

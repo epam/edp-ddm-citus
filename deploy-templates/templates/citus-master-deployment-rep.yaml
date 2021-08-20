@@ -55,6 +55,22 @@ spec:
           mountPath: {{ .Values.masterReplica.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
+        - name: register-worker
+          readOnly: true
+          mountPath: /etc/register_worker.sql
+          subPath: register_worker.sql
+        - name: registry-create-db-init-citus
+          readOnly: true
+          mountPath: /etc/registry_db__create_db_and_init_citus.sql
+          subPath: registry_db__create_db_and_init_citus.sql
+        - name: create-roles-on-replica
+          readOnly: true
+          mountPath: /etc/registry_db__create_roles_on_replica.sql
+          subPath: registry_db__create_roles_on_replica.sql
+        - name: grants-after-deploy-on-replica
+          readOnly: true
+          mountPath: /etc/registry_db__grants_after_deploy_on_replica.sql
+          subPath: registry_db__grants_after_deploy_on_replica.sql
         livenessProbe:
           exec:
             command:
@@ -67,3 +83,15 @@ spec:
         - name: pg-conf
           configMap:
             name: pgconfig
+        - name: register-worker
+          configMap:
+            name: register-worker
+        - name: registry-create-db-init-citus
+          configMap:
+            name: registry-create-db-init-citus
+        - name: create-roles-on-replica
+          configMap:
+            name: create-roles-on-replica
+        - name: grants-after-deploy-on-replica
+          configMap:
+            name: grants-after-deploy-on-replica

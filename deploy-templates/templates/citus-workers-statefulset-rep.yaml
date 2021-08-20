@@ -66,6 +66,10 @@ spec:
           mountPath: {{ .Values.workersReplica.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
+        - name: registry-create-db-init-citus
+          readOnly: true
+          mountPath: /etc/registry_db__create_db_and_init_citus.sql
+          subPath: registry_db__create_db_and_init_citus.sql
         livenessProbe:
           exec:
             command:
@@ -106,10 +110,17 @@ spec:
         volumeMounts:
         - name: pg-conf
           mountPath: /etc/postgresql
+        - name: registry-create-db-init-citus
+          readOnly: true
+          mountPath: /etc/registry_db__create_db_and_init_citus.sql
+          subPath: registry_db__create_db_and_init_citus.sql
       volumes:
         - name: pg-conf
           configMap:
             name: pgconfig
+        - name: registry-create-db-init-citus
+          configMap:
+            name: registry-create-db-init-citus
   volumeClaimTemplates:
   - metadata:
       name: {{ .Values.workersReplica.volumes.name }}
