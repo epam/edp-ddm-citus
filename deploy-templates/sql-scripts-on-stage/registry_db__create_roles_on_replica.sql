@@ -10,5 +10,6 @@ select 'create role ' || :appRoleName || ' with password ' || :'appRolePass' || 
 select 'alter role ' || :appRoleName || ' with password ' || :'appRolePass' || ' login'
 \gexec
 
-select 'grant connect on database ' || :dbName || ' to ' || :appRoleName
+-- MDTUDDM-7279 Користувач з роллю appRole з секретів oc.db.citus-role.secrets не повинен мати до бази даних репліки
+select 'revoke connect on database ' || :dbName || ' from ' || :appRoleName
 \gexec
