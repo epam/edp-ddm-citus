@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "run-db-scripts-job"
+spec:
+  template:
+    metadata:
+      annotations:
+        "helm.sh/hook": post-install,post-upgrade
+    spec:
+      serviceAccountName: {{ .Values.name }}
+      restartPolicy: Never
+      initContainers:
+        - name: init-chown-data
+          image: {{ template "dockerProxyRegistry" . -}} busybox
+          command:
+            - sh
+            - '-c'
+            - >-
+              while ! nc -w 1 {{ .Values.master.name }} {{ .Values.master.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+      containers:
+      - name: run-db-scripts-job
+        image: "{{ .Values.dockerProxyRegistry }}/{{ .Values.edpProject }}/{{ .Values.citus.image.dbScriptsImage }}"
+        imagePullPolicy: IfNotPresent
+        workingDir: /liquibase/platform-db
+        command:
+          - sh
+          - '-c'
+          - >-
+            bash update.sh 
+        env:
+        {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
+        {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
+          - name: {{ $v }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $rolesSecret }}
+                key: {{ $v }}
+        {{- end }}
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.secrets.citusSecrets.pgsecretName }}
+                key: {{ .Values.citus.secrets.citusSecrets.userName }}
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.secrets.citusSecrets.pgsecretName }}
+                key: {{ .Values.citus.secrets.citusSecrets.pgsecretKey }}
+          - name: masterDBurl
+            value: {{ .Values.citus.url.masterDBurl}}
+          - name: replicaDBurl
+            value: {{ .Values.citus.url.replicaDBurl}}
+          
+          

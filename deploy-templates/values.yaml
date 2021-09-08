@@ -101,3 +101,37 @@ resources:
   requests:
     cpu: 100m
     memory: 1Gi
+
+citus:
+  secrets:
+    citusSecrets:
+      pgsecretName: citus-secrets
+      userName: username
+      pgsecretKey: password
+      rolesSecret: citus-roles-secrets
+    citusRolesSecrets:
+      adminUser: anAdmUser
+      adminPass: anAdmPass
+      anroleName: anRoleName
+      anrolePass: anRolePass
+      svcUser: anSvcUser
+      svcPass: anSvcPass
+      settRoleName: settRoleName
+      settRolePass: settRolePass
+      exExporterUser: excerptExporterUser
+      exExporterPass: excerptExporterPass
+      exSvcUser: excerptSvcUser
+      exSvcPass: excerptSvcPass
+      exWorkUser: excerptWorkUser
+      exWorkPass: excerptWorkPass
+      regOwnerName: regOwnerName
+      regOwnerPass: regOwnerPass
+      appRoleName: appRoleName
+      appRolePass: appRolePass
+      admRoleName: admRoleName
+      admRolePass: admRolePass
+  url:
+    masterDBurl: jdbc:postgresql://citus-master:5432
+    replicaDBurl: jdbc:postgresql://citus-master-rep:5432
+  image: 
+    dbScriptsImage: db-scripts-master:1.4.0-SNAPSHOT.2

@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: script-with-psql-commands
-data:
-  script_with_psql_commands_for_master.sh:
-{{ (.Files.Glob "files/script_with_psql_commands_for_master.sh").AsConfig | indent 2 }}
