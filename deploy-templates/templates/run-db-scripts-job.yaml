@@ -2,11 +2,13 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "run-db-scripts-job"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   template:
     metadata:
       annotations:
-        "helm.sh/hook": post-install,post-upgrade
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: {{ .Values.name }}
       restartPolicy: Never
