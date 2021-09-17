@@ -22,7 +22,7 @@ spec:
               while ! nc -w 1 {{ .Values.master.name }} {{ .Values.master.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
       containers:
       - name: run-db-scripts-job
-        image: "{{ .Values.dockerProxyRegistry }}/{{ .Values.edpProject }}/{{ .Values.citus.image.dbScriptsImage }}"
+        image: {{ .Values.image.name  }}:{{ .Values.image.version }}
         imagePullPolicy: IfNotPresent
         workingDir: /liquibase/platform-db
         command:
@@ -50,8 +50,47 @@ spec:
                 name: {{ .Values.citus.secrets.citusSecrets.pgsecretName }}
                 key: {{ .Values.citus.secrets.citusSecrets.pgsecretKey }}
           - name: masterDBurl
-            value: {{ .Values.citus.url.masterDBurl}}
+            value: {{ .Values.citus.url.masterDBurl }}
           - name: replicaDBurl
-            value: {{ .Values.citus.url.replicaDBurl}}
-          
-          
+            value: {{ .Values.citus.url.replicaDBurl }}
+          - name: dbName
+            value: {{ .Values.citus.dbName }}
+          - name: archiveSchema
+            value: {{ .Values.citus.archiveSchema }}
+          - name: pubHost
+            value: {{ .Values.citus.pubHost }}
+          - name: pubUser
+            value: {{ .Values.citus.pubUser }}
+          - name: pubPort
+            value: {{ .Values.citus.pubPort | quote }}
+        {{- $urlprefix := "jdbc:postgresql://" -}}
+        {{- $nodename := .Values.workers.containers.node_name -}}
+        {{- $workersname := .Values.workers.name -}}
+        {{- $containersport := .Values.workers.containers.port | toString -}}
+        {{- $replicas := .Values.workers.replicas | int -}}
+        {{- $workersList := list -}}
+          {{- if gt $replicas 0 }}
+            {{- range untilStep 0 $replicas 1 }}
+            {{- $workersList = append $workersList (printf "%s%s-%d.%s:%s" $urlprefix $nodename . $workersname $containersport) }}
+            {{- end }}
+          - name: masterWorkers
+            value: "{{ $workersList | join " " }}"
+          {{- else }}
+          - name: masterWorkers
+            value: ""
+        {{- end }}
+        {{- $nodenamerep := .Values.workersReplica.containers.node_name -}}
+        {{- $workersnamerep := .Values.workersReplica.name -}}
+        {{- $containersportrep := .Values.workersReplica.containers.port | toString -}}
+        {{- $replicasrep := .Values.workersReplica.replicas | int -}}
+        {{- $workersRepList := list -}}
+          {{- if gt $replicasrep 0 }}
+            {{- range untilStep 0 $replicasrep 1 }}
+            {{- $workersRepList = append $workersRepList (printf "%s%s-%d.%s:%s" $urlprefix $nodenamerep . $workersnamerep $containersportrep) }}
+            {{- end }}
+          - name: replicaWorkers
+            value: "{{ $workersRepList | join " " }}"
+        {{- else }}
+          - name: replicaWorkers
+            value: ""
+        {{- end }}

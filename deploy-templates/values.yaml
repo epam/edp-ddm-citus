@@ -103,6 +103,11 @@ resources:
     memory: 1Gi
 
 citus:
+  dbName: registry
+  archiveSchema: archive
+  pubHost: citus-master
+  pubUser: postgres
+  pubPort: 5432
   secrets:
     citusSecrets:
       pgsecretName: citus-secrets
@@ -130,8 +135,8 @@ citus:
       appRolePass: appRolePass
       admRoleName: admRoleName
       admRolePass: admRolePass
+      histRoleName: histRoleName
+      histRolePass: histRolePass
   url:
     masterDBurl: jdbc:postgresql://citus-master:5432
     replicaDBurl: jdbc:postgresql://citus-master-rep:5432
-  image: 
-    dbScriptsImage: db-scripts-master:1.4.0-SNAPSHOT.2

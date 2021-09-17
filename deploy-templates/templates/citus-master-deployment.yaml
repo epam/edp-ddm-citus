@@ -60,22 +60,6 @@ spec:
           mountPath: {{ .Values.master.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
-        - name: sql-on-stage
-          readOnly: true
-          mountPath: /etc/run_on_create_schema_stage.sql
-          subPath: run_on_create_schema_stage.sql
-        - name: register-worker
-          readOnly: true
-          mountPath: /etc/register_worker.sql
-          subPath: register_worker.sql
-        - name: registry-create-db-init-citus
-          readOnly: true
-          mountPath: /etc/registry_db__create_db_and_init_citus.sql
-          subPath: registry_db__create_db_and_init_citus.sql
-        - name: create-roles-on-master
-          readOnly: true
-          mountPath: /etc/registry_db__create_roles_on_master.sql
-          subPath: registry_db__create_roles_on_master.sql
         - name: grants-after-deploy-on-master
           readOnly: true
           mountPath: /etc/registry_db__grants_after_deploy_on_master.sql
@@ -95,18 +79,6 @@ spec:
         - name: citus-create-roles
           configMap:
             name: citus-create-roles
-        - name: sql-on-stage
-          configMap:
-            name: sql-on-stage
-        - name: register-worker
-          configMap:
-            name: register-worker
-        - name: registry-create-db-init-citus
-          configMap:
-            name: registry-create-db-init-citus
-        - name: create-roles-on-master
-          configMap:
-            name: create-roles-on-master
         - name: grants-after-deploy-on-master
           configMap:
             name: grants-after-deploy-on-master
