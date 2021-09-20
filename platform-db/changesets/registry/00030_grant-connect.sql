@@ -3,8 +3,12 @@
 grant connect on database ${dbName} to ${appRoleName};
 
 
---changeset platform:analytics-admin-role-grant context:"pub"
+--changeset platform:admin-role-grant context:"pub"
 grant connect on database ${dbName} to ${admRoleName};
+
+
+--changeset platform:analytics-admin-role-grant context:"sub"
+grant connect on database ${dbName} to ${anAdmUser};
 
 
 --changeset platform:historical_data_role-grant context:"sub"
