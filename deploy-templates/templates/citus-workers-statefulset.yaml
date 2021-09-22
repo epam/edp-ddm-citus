@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.workers.containers.node_name }}
+  labels:
+    app: {{ .Values.workers.name }}
 spec:
   selector:
     matchLabels:
