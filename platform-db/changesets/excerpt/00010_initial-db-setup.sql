@@ -42,16 +42,16 @@ revoke all on excerpt_record from public;
 
 -- grants
 -- role excerpt_exporter
-grant select, insert, update, delete on excerpt_template to ${excerptExporterUser};
+grant select, insert, update, delete on excerpt_template to ${excerptExporterName};
 
 
 -- role excerpt_service_user
-grant select on excerpt_template to ${excerptSvcUser};
+grant select on excerpt_template to ${excerptSvcName};
 
-grant select, insert on excerpt_record to ${excerptSvcUser};
+grant select, insert on excerpt_record to ${excerptSvcName};
 
 
 -- role excerpt_worker_user
-grant select on excerpt_template to ${excerptWorkUser};
+grant select on excerpt_template to ${excerptWorkName};
 
-grant select, update on excerpt_record to ${excerptWorkUser};
+grant select, update on excerpt_record to ${excerptWorkName};

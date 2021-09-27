@@ -12,7 +12,7 @@ create role ${admRoleName} with password '${admRolePass}' login;
 
 --changeset platform:create-analytics-admin-role context:"sub"
 --validCheckSum: ANY
-create role ${anAdmUser} with password '${anAdmPass}' login;
+create role ${anAdmName} with password '${anAdmPass}' login;
 
 
 --changeset platform:create-historical_data_role context:"sub"

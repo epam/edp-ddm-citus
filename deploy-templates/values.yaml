@@ -114,29 +114,30 @@ citus:
       userName: username
       pgsecretKey: password
       rolesSecret: citus-roles-secrets
-    citusRolesSecrets:
-      adminUser: anAdmUser
-      adminPass: anAdmPass
-      anroleName: anRoleName
-      anrolePass: anRolePass
-      svcUser: anSvcUser
-      svcPass: anSvcPass
-      settRoleName: settRoleName
-      settRolePass: settRolePass
-      exExporterUser: excerptExporterUser
-      exExporterPass: excerptExporterPass
-      exSvcUser: excerptSvcUser
-      exSvcPass: excerptSvcPass
-      exWorkUser: excerptWorkUser
-      exWorkPass: excerptWorkPass
-      regOwnerName: regOwnerName
-      regOwnerPass: regOwnerPass
-      appRoleName: appRoleName
-      appRolePass: appRolePass
-      admRoleName: admRoleName
-      admRolePass: admRolePass
-      histRoleName: histRoleName
-      histRolePass: histRolePass
+    citusRolesSecretsName:
+      - anAdmName
+      - anRoleName 
+      - anSvcName
+      - settRoleName
+      - excerptExporterName
+      - excerptSvcName
+      - excerptWorkName
+      - regOwnerName
+      - appRoleName
+      - admRoleName
+      - histRoleName
+    citusRolesSecretsPass:
+      - regOwnerPass
+      - appRolePass
+      - admRolePass
+      - settRolePass
+      - anRolePass
+      - excerptSvcPass
+      - excerptWorkPass
+      - excerptExporterPass
+      - anAdmPass
+      - anSvcPass
+      - histRolePass
   url:
     masterDBurl: jdbc:postgresql://citus-master:5432
     replicaDBurl: jdbc:postgresql://citus-master-rep:5432

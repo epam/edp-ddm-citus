@@ -49,7 +49,7 @@ comment on column audit_event.received                              is 'Час, 
 revoke connect on database audit from public;
 revoke all on audit_event from public;
 
-grant connect on database audit to ${anAdmUser};
+grant connect on database audit to ${anAdmName};
 grant connect on database audit to ${anRoleName};
-grant connect on database audit to ${anSvcUser};
-grant insert on audit_event to ${anSvcUser};
+grant connect on database audit to ${anSvcName};
+grant insert on audit_event to ${anSvcName};
