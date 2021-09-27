@@ -8,7 +8,7 @@ grant connect on database ${dbName} to ${admRoleName};
 
 
 --changeset platform:analytics-admin-role-grant context:"sub"
-grant connect on database ${dbName} to ${anAdmUser};
+grant connect on database ${dbName} to ${anAdmName};
 
 
 --changeset platform:historical_data_role-grant context:"sub"
