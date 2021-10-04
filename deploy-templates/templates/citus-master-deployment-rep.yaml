@@ -57,10 +57,6 @@ spec:
           mountPath: {{ .Values.masterReplica.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
-        - name: grants-after-deploy-on-replica
-          readOnly: true
-          mountPath: /etc/registry_db__grants_after_deploy_on_replica.sql
-          subPath: registry_db__grants_after_deploy_on_replica.sql
         livenessProbe:
           exec:
             command:
@@ -73,6 +69,3 @@ spec:
         - name: pg-conf
           configMap:
             name: pgconfig
-        - name: grants-after-deploy-on-replica
-          configMap:
-            name: grants-after-deploy-on-replica

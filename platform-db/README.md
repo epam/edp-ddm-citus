@@ -31,6 +31,7 @@ registry
 │   └── p_version_control.sql
 ├── triggers
 ├── views
+├── z-post-update
 ├── 00010_init-db.sql
 ├── .................
 └── 00080_subscription.sql
@@ -46,6 +47,10 @@ The file must start with the following comment
 Example - [f_check_permissions_dcm.sql](platform-db/changesets/registry/procedures/f_check_permissions_dcm.sql)
 
 Theese files can be edited. Liquibase keeps track of the changes and runs the scripts only if they are changed compared to the previous deployment
+
+### z-post-update folder
+This folder contains scripts that will be run the last.
+Look below about file names' convention and file starting lines.
 
 ### Everithing else
 Everithing else goes into database folder root. The script can contain any sql statements.

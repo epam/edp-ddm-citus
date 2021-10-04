@@ -62,10 +62,6 @@ spec:
           mountPath: {{ .Values.master.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
-        - name: grants-after-deploy-on-master
-          readOnly: true
-          mountPath: /etc/registry_db__grants_after_deploy_on_master.sql
-          subPath: registry_db__grants_after_deploy_on_master.sql
         livenessProbe:
           exec:
             command:
@@ -81,6 +77,3 @@ spec:
         - name: citus-create-roles
           configMap:
             name: citus-create-roles
-        - name: grants-after-deploy-on-master
-          configMap:
-            name: grants-after-deploy-on-master
