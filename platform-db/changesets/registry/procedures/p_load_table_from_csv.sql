@@ -18,6 +18,7 @@ DECLARE
   l_col_names TEXT[];
   l_col_vals TEXT[];
   l_curr_idx int;
+  l_system_roles_arr text := 'array[null, null, null, null]::text[]'; -- system role marker to skip RBAC check during initial data load
 BEGIN
   --
   FOR i IN array_lower(p_table_columns, 1)..array_upper(p_table_columns, 1) LOOP
@@ -83,12 +84,12 @@ BEGIN
   --
   IF l_is_uuid THEN
 --    l_sql := format('SELECT ''($$%s$$)::hstore);'' f FROM %I_csv', l_cols, p_table_name);
-    l_sql := format('SELECT ''SELECT f_row_insert(''''%I'''', (''''%s'''')::hstore,($$%s$$)::hstore, NULL::text[], ''''''||uuid||''''''::uuid);'' f
+    l_sql := format('SELECT ''SELECT f_row_insert(''''%I'''', (''''%s'''')::hstore,($$%s$$)::hstore, ' || l_system_roles_arr || ', ''''''||uuid||''''''::uuid);'' f
                  FROM %I_csv'
                  , p_table_name, l_sys_cols, l_cols, p_table_name);
 --                 , array_to_string(l_lookups,', '), p_table_name, l_sys_cols, l_cols, p_table_name);
   ELSE
-    l_sql := format('SELECT ''SELECT f_row_insert(''''%I'''', (''''%s'''')::hstore,($$%s$$)::hstore);'' f
+    l_sql := format('SELECT ''SELECT f_row_insert(''''%I'''', (''''%s'''')::hstore,($$%s$$)::hstore, ' || l_system_roles_arr || ');'' f
                  FROM %I_csv'
                  , p_table_name, l_sys_cols, l_cols, p_table_name);
   END IF;
