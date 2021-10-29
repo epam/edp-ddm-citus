@@ -10,12 +10,12 @@ DECLARE
 BEGIN
   SELECT string_agg(column_name,',') into l_col_lst
   FROM information_schema.columns
-  WHERE table_schema = 'public'
+  WHERE table_schema = 'registry'
     AND table_name   = p_source_table;
   --
   SELECT column_name INTO l_part_key
   FROM information_schema.constraint_column_usage
-  WHERE table_schema = 'public' AND table_name = p_target_table AND constraint_name like 'ui%' LIMIT 1;
+  WHERE table_schema = 'registry' AND table_name = p_target_table AND constraint_name like 'ui%' LIMIT 1;
   --
   l_sql := 'WITH S AS (SELECT row_number() OVER (PARTITION BY ' || l_part_key || ' ORDER BY ddm_created_at DESC) rn,* FROM '|| p_source_table ||')
             INSERT INTO ' || p_target_table || '(' || l_col_lst || ')
@@ -26,4 +26,4 @@ BEGIN
 END;
 $procedure$
 SECURITY DEFINER
-SET search_path = public, pg_temp;
+SET search_path = registry, public, pg_temp;

@@ -8,4 +8,4 @@ BEGIN
 END;
 $procedure$
 SECURITY DEFINER
-SET search_path = public, pg_temp;
+SET search_path = registry, public, pg_temp;

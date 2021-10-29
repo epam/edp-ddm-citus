@@ -24,7 +24,7 @@ begin
   -- check if dcm_access_role column exists in p_table_name
   l_sql := 'select column_name
               from information_schema.columns
-              where table_schema = ''public''
+              where table_schema = ''registry''
                 and table_name = ''' || p_table_name || '''
                 and column_name = ''dcm_access_role''
            ';
@@ -86,4 +86,4 @@ begin
 end;
 $function$
 SECURITY DEFINER
-SET search_path = public, pg_temp;
+SET search_path = registry, public, pg_temp;

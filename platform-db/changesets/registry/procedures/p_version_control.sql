@@ -51,7 +51,7 @@ BEGIN
 END;
 $procedure$
 SECURITY DEFINER
-SET search_path = public, pg_temp;
+SET search_path = registry, public, pg_temp;
 
 -- drop previous version of procedure
 DROP PROCEDURE IF EXISTS p_version_control(TEXT);

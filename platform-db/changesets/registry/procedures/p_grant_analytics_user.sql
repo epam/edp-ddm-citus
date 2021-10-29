@@ -22,10 +22,10 @@ BEGIN
 
   execute 'grant connect on database ' || current_database() || ' to "' || v_user_name || '";';
 
-  FOR r IN SELECT * FROM information_schema.views WHERE table_name LIKE c_obj_pattern AND table_schema = 'public' LOOP
+  FOR r IN SELECT * FROM information_schema.views WHERE table_name LIKE c_obj_pattern AND table_schema = 'registry' LOOP
     EXECUTE 'GRANT SELECT ON "' || r.table_name || '" TO "' || v_user_name || '";';
   END LOOP;
  END;
 $procedure$
 SECURITY DEFINER
-SET search_path = public, pg_temp;
+SET search_path = registry, public, pg_temp;
