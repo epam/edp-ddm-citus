@@ -20,7 +20,7 @@ spec:
     spec:
       initContainers:
         - name: init-chown-data
-          image: {{ template "dockerProxyRegistry" . -}} busybox
+          image: {{ template "imageRegistry" . -}} busybox
           command:
             - sh
             - '-c'
@@ -36,7 +36,7 @@ spec:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
-        image: {{ template "dockerProxyRegistry" . -}} {{ .Values.workers.containers.image }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.workers.containers.image }}
         imagePullPolicy: IfNotPresent
         command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
         ports:
@@ -74,7 +74,7 @@ spec:
             - ./pg_healthcheck
           initialDelaySeconds: 60
       - name: {{ .Values.workers.containers.node_name }}-sidecar
-        image: {{ template "dockerProxyRegistry" . -}} {{ .Values.workers.containers.image }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.workers.containers.image }}
         imagePullPolicy: IfNotPresent
         command:
           - 'sh'
