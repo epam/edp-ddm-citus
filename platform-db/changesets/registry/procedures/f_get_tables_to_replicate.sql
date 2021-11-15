@@ -27,5 +27,3 @@ END;
 $function$
 SECURITY DEFINER
 SET search_path = registry, public, pg_temp;
-
-SELECT create_distributed_function('f_get_tables_to_replicate(text)');

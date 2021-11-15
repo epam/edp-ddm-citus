@@ -14,5 +14,3 @@ END;
 $procedure$
 SECURITY DEFINER
 SET search_path = registry, public, pg_temp;
-
-SELECT create_distributed_function('p_alter_publicaton(text)');
