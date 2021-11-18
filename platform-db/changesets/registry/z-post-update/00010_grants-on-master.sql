@@ -1,7 +1,6 @@
 --liquibase formatted sql
---changeset platform:app-role-post-deploy-grants context:"pub"
+--changeset platform:app-role-post-deploy-grant context:"pub"
 grant execute on all routines in schema public to ${appRoleName};
-grant usage on schema registry to ${appRoleName};
 
 --changeset platform:admin-role-post-deploy-grants context:"pub"
 grant select on table ddm_db_changelog to ${admRoleName};

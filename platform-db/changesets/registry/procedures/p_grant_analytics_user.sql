@@ -21,7 +21,6 @@ BEGIN
   end if;
 
   execute 'grant connect on database ' || current_database() || ' to "' || v_user_name || '";';
-  execute 'grant usage on schema registry to "' || v_user_name || '";';
 
   FOR r IN SELECT * FROM information_schema.views WHERE table_name LIKE c_obj_pattern AND table_schema = 'registry' LOOP
     EXECUTE 'GRANT SELECT ON "' || r.table_name || '" TO "' || v_user_name || '";';

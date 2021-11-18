@@ -1,5 +1,5 @@
 --liquibase formatted sql
---changeset platform:create-other-roles
+--changeset platform:create-other-roles context:"pub"
 --validCheckSum: ANY
 -- role application_role
 create role ${appRoleName} with password '${appRolePass}' login;
