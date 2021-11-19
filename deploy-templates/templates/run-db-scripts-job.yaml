@@ -10,7 +10,7 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: {{ .Values.name }}
+      serviceAccountName: {{ .Values.citus.serviceAccountName }}
       restartPolicy: Never
       initContainers:
         - name: init-chown-data
