@@ -1,5 +1,8 @@
 name: citus-chart
 
+global:
+  imageRegistry: defaultValue
+
 repl:
   name: citus-chart-rep
 
@@ -56,7 +59,6 @@ workers:
 secret:
   name: citus-secrets
 
-
 masterReplica:
   name: citus-master-rep
   replicas: 1
@@ -103,6 +105,11 @@ resources:
     memory: 1Gi
 
 citus:
+  pgpassEnvVariable: /var/lib/postgresql/data/.pgpass
+  serviceAccountName: citus-chart
+  securityContext:
+    runAsUser: 999
+    fsGroup: 999
   dbName: registry
   archiveSchema: archive
   pubHost: citus-master
@@ -114,30 +121,19 @@ citus:
       userName: username
       pgsecretKey: password
       rolesSecret: citus-roles-secrets
-    citusRolesSecretsName:
-      - anAdmName
-      - anRoleName 
-      - anSvcName
-      - settRoleName
-      - excerptExporterName
-      - excerptSvcName
-      - excerptWorkName
-      - regOwnerName
-      - appRoleName
-      - admRoleName
-      - histRoleName
-    citusRolesSecretsPass:
-      - regOwnerPass
-      - appRolePass
-      - admRolePass
-      - settRolePass
-      - anRolePass
-      - excerptSvcPass
-      - excerptWorkPass
-      - excerptExporterPass
-      - anAdmPass
-      - anSvcPass
-      - histRolePass
+    citusRolesSecrets:
+      anAdm: analytics_admin
+      anRole: analytics_auditor
+      anSvc: audit_service_user
+      settRole: settings_role
+      excerptExporter: excerpt_exporter
+      excerptSvc: excerpt_service_user
+      excerptWork: excerpt_worker_user
+      regOwner: registry_owner_role
+      appRole: application_role
+      admRole: admin_role
+      histRole: historical_data_role
+
   url:
     masterDBurl: jdbc:postgresql://citus-master:5432
     replicaDBurl: jdbc:postgresql://citus-master-rep:5432

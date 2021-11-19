@@ -32,19 +32,21 @@ spec:
             bash update.sh 
         env:
         {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
-        {{- range $k := .Values.citus.secrets.citusRolesSecretsName }}
-          - name: {{ $k }}
+        {{- range $k,$v := .Values.citus.secrets.citusRolesSecrets }}
+          {{- $keyName := (print $k "Name") }}
+          - name: {{ $keyName }}
             valueFrom:
               secretKeyRef:
                 name: {{ $rolesSecret }}
-                key: {{ $k }}
+                key: {{ $keyName }}
         {{- end }}
-        {{- range $k := .Values.citus.secrets.citusRolesSecretsPass }}
-          - name: {{ $k }}
+        {{- range $k,$v := .Values.citus.secrets.citusRolesSecrets }}
+          {{- $keyPass := (print $k "Pass") }}
+          - name: {{ $keyPass }}
             valueFrom:
               secretKeyRef:
                 name: {{ $rolesSecret }}
-                key: {{ $k }}
+                key: {{ $keyPass }}
         {{- end }}
           - name: DB_NAME
             valueFrom:

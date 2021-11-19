@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgpass
+data:
+  002-create-pgpass.sh: |
+    #!/bin/bash -ev
+    cat <<EOF > /var/lib/postgresql/data/.pgpass
+    {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
+      {{- $valPass := (print $v "_pass") }}
+    *:*:*:{{ $v }}:${{ $valPass }}
+    {{- end }}
+    *:*:*:postgres:$POSTGRES_PASSWORD
+    EOF
+    chown postgres:postgres /var/lib/postgresql/data/.pgpass
+    chmod 0600 /var/lib/postgresql/data/.pgpass

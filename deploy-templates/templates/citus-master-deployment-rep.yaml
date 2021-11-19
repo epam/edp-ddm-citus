@@ -38,13 +38,18 @@ spec:
         ports:
         - containerPort: {{ .Values.masterReplica.containers.port }}
         env:
-        - name: PGDATA
-          value: {{ .Values.masterReplica.containers.env.pgdata_value }}
-        - name: PGPASSWORD
+        {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
+        {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
+          {{- $valPass := (print $v "_pass") }}
+          {{- $keyPass := (print $k "Pass") }}
+        - name: {{ $valPass }}
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
-              key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
+              name: {{ $rolesSecret }}
+              key: {{ $keyPass }}
+        {{- end }}
+        - name: PGDATA
+          value: {{ .Values.masterReplica.containers.env.pgdata_value }}
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -52,16 +57,25 @@ spec:
               key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
         - name: PGTZ
           value: {{ .Values.database.timezone }}
+        - name: PGPASSFILE
+          value: {{ .Values.citus.pgpassEnvVariable }}
         volumeMounts:
         - name: {{ .Values.masterReplica.containers.volumeMounts.name }}
           mountPath: {{ .Values.masterReplica.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
+        - name: pgpass
+          mountPath: /docker-entrypoint-initdb.d/002-create-pgpass.sh
+          subPath: 002-create-pgpass.sh
         livenessProbe:
           exec:
             command:
             - ./pg_healthcheck
           initialDelaySeconds: 60
+      securityContext:
+        runAsUser: {{ .Values.citus.securityContext.runAsUser }}
+        fsGroup: {{ .Values.citus.securityContext.fsGroup }}
+      serviceAccountName: {{ .Values.citus.serviceAccountName }}
       volumes:
         - name: {{ .Values.masterReplica.volumes.name }}
           persistentVolumeClaim:
@@ -69,3 +83,9 @@ spec:
         - name: pg-conf
           configMap:
             name: pgconfig
+        - name: pgpass
+          configMap:
+            name: pgpass
+        - name: citus-create-roles
+          configMap:
+            name: citus-create-roles

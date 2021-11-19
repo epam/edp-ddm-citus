@@ -42,20 +42,20 @@ spec:
         ports:
         - containerPort: {{ .Values.workersReplica.containers.port }}
         env:
+        {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
+        {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
+          {{- $valPass := (print $v "_pass") }}
+          {{- $keyPass := (print $k "Pass") }}
+        - name: {{ $valPass }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $rolesSecret }}
+              key: {{ $keyPass }}
+        {{- end }}
         - name: POD_IP
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        - name: PSQL_USER  
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
-              key: {{ .Values.masterReplica.containers.env.user_name }}
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
-              key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -63,11 +63,16 @@ spec:
               key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
         - name: PGDATA
           value: {{ .Values.workersReplica.containers.env.pgdata_value }}
+        - name: PGPASSFILE
+          value: {{ .Values.citus.pgpassEnvVariable }}
         volumeMounts:
-        - name: {{ .Values.workersReplica.containers.volumeMounts.name }}
-          mountPath: {{ .Values.workersReplica.containers.volumeMounts.mountPath }}
-        - name: pg-conf
-          mountPath: /etc/postgresql
+          - name: {{ .Values.workers.containers.volumeMounts.name }}
+            mountPath: {{ .Values.workers.containers.volumeMounts.mountPath }}
+          - name: pg-conf
+            mountPath: /etc/postgresql
+          - name: pgpass
+            mountPath: /docker-entrypoint-initdb.d/002-create-pgpass.sh
+            subPath: 002-create-pgpass.sh
         livenessProbe:
           exec:
             command:
@@ -88,7 +93,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        - name: PSQL_USER  
+        - name: PSQL_USER
           valueFrom:
             secretKeyRef:
               name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
@@ -98,20 +103,19 @@ spec:
             secretKeyRef:
               name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
               key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.workersReplica.containers.env.pgsecret_name }}
-              key: {{ .Values.workersReplica.containers.env.pgsecret_key }}
         - name: PGDATA
           value: {{ .Values.workersReplica.containers.env.pgdata_value }}
-        volumeMounts:
-        - name: pg-conf
-          mountPath: /etc/postgresql
+      securityContext:
+        runAsUser: {{ .Values.citus.securityContext.runAsUser }}
+        fsGroup: {{ .Values.citus.securityContext.fsGroup }}
+      serviceAccountName: {{ .Values.citus.serviceAccountName }}
       volumes:
         - name: pg-conf
           configMap:
             name: pgconfig
+        - name: pgpass
+          configMap:
+            name: pgpass
   volumeClaimTemplates:
   - metadata:
       name: {{ .Values.workersReplica.volumes.name }}

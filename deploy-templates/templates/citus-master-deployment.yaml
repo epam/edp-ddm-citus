@@ -22,7 +22,7 @@ spec:
       initContainers:
         - name: init-chown-data
           image: {{ template "imageRegistry" . -}} busybox
-          command: [ 'sh', '-c', 'chmod 0700 -R /data/pgdata || true' ]
+          command: ['sh', '-c', 'chmod 0700 -R /data/pgdata || true']
           volumeMounts:
             - name: {{ .Values.master.volumes.name }}
               mountPath: /data
@@ -34,22 +34,22 @@ spec:
             memory: {{ .Values.resources.requests.memory }}
         image: {{ template "imageRegistry" . -}} {{ .Values.master.containers.image }}
         imagePullPolicy: IfNotPresent
-        command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+        command: ["docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf"]
         ports:
         - containerPort: {{ .Values.master.containers.port }}
         env:
-        - name: PSQL_USER
+        {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
+        {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
+          {{- $valPass := (print $v "_pass") }}
+          {{- $keyPass := (print $k "Pass") }}
+        - name: {{ $valPass }}
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.master.containers.env.pgsecret_name }}
-              key: {{ .Values.master.containers.env.user_name }}
+              name: {{ $rolesSecret }}
+              key: {{ $keyPass }}
+        {{- end }}
         - name: PGDATA
           value: {{ .Values.master.containers.env.pgdata_value }}
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.master.containers.env.pgsecret_name }}
-              key: {{ .Values.master.containers.env.pgsecret_key }}
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -57,16 +57,25 @@ spec:
               key: {{ .Values.master.containers.env.pgsecret_key }}
         - name: PGTZ
           value: {{ .Values.database.timezone }}
+        - name: PGPASSFILE
+          value: {{ .Values.citus.pgpassEnvVariable }}
         volumeMounts:
         - name: {{ .Values.master.containers.volumeMounts.name }}
           mountPath: {{ .Values.master.containers.volumeMounts.mountPath }}
         - name: pg-conf
           mountPath: /etc/postgresql
+        - name: pgpass
+          mountPath: /docker-entrypoint-initdb.d/002-create-pgpass.sh
+          subPath: 002-create-pgpass.sh
         livenessProbe:
           exec:
             command:
             - ./pg_healthcheck
           initialDelaySeconds: 60
+      securityContext:
+        runAsUser: {{ .Values.citus.securityContext.runAsUser }}
+        fsGroup: {{ .Values.citus.securityContext.fsGroup }}
+      serviceAccountName: {{ .Values.citus.serviceAccountName }}
       volumes:
         - name: {{ .Values.master.volumes.name }}
           persistentVolumeClaim:
@@ -74,6 +83,9 @@ spec:
         - name: pg-conf
           configMap:
             name: pgconfig
+        - name: pgpass
+          configMap:
+            name: pgpass
         - name: citus-create-roles
           configMap:
             name: citus-create-roles
