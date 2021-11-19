@@ -106,7 +106,7 @@ resources:
 
 citus:
   pgpassEnvVariable: /var/lib/postgresql/data/.pgpass
-  serviceAccountName: citus-chart
+  serviceAccountName: citus
   securityContext:
     runAsUser: 999
     fsGroup: 999
