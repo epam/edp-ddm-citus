@@ -33,8 +33,8 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
-                  key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
+                  name: {{ .Values.master.containers.env.pgsecret_name }}
+                  key: {{ .Values.master.containers.env.pgsecret_key }}
           volumeMounts:
             - name: {{ .Values.workers.volumes.name }}
               mountPath: /data

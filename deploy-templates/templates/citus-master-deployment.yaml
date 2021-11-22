@@ -43,10 +43,10 @@ spec:
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
+                name: {{ .Values.master.containers.env.pgsecret_name }}
                 key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
           volumeMounts:
-            - name: {{ .Values.masterReplica.volumes.name }}
+            - name: {{ .Values.master.volumes.name }}
               mountPath: /data
             - name: pgpass
               mountPath: /data/create-pgpass.sh
