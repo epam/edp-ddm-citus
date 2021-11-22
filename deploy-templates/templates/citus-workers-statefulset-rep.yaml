@@ -20,16 +20,37 @@ spec:
     spec:
       initContainers:
         - name: init-chown-data
-          image: {{ template "imageRegistry" . -}} busybox
+          image: {{ template "imageRegistry" . -}} {{ .Values.citus.initContainer.image }}
           command:
             - sh
             - '-c'
             - >-
+              /bin/ash /data/create-pgpass.sh;
               chmod 0700 -R /data/pgdata || true;
-              while ! nc -w 1 {{ .Values.masterReplica.name }} {{ .Values.masterReplica.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+              chmod 0600 /data/.pgpass;
+              while ! nc -w 1 {{ .Values.master.name }} {{ .Values.master.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+          env:
+          {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
+          {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
+          {{- $valPass := (print $v "_pass") }}
+          {{- $keyPass := (print $k "Pass") }}
+          - name: {{ $valPass }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $rolesSecret }}
+                key: {{ $keyPass }}
+          {{- end }}
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
+                key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
           volumeMounts:
             - name: {{ .Values.workersReplica.volumes.name }}
               mountPath: /data
+            - name: pgpass
+              mountPath: /data/create-pgpass.sh
+              subPath: create-pgpass.sh
       containers:
       - name: {{ .Values.workersReplica.containers.node_name }}
         resources:
@@ -42,16 +63,6 @@ spec:
         ports:
         - containerPort: {{ .Values.workersReplica.containers.port }}
         env:
-        {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
-        {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
-          {{- $valPass := (print $v "_pass") }}
-          {{- $keyPass := (print $k "Pass") }}
-        - name: {{ $valPass }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ $rolesSecret }}
-              key: {{ $keyPass }}
-        {{- end }}
         - name: POD_IP
           valueFrom:
             fieldRef:
@@ -70,9 +81,6 @@ spec:
             mountPath: {{ .Values.workers.containers.volumeMounts.mountPath }}
           - name: pg-conf
             mountPath: /etc/postgresql
-          - name: pgpass
-            mountPath: /docker-entrypoint-initdb.d/002-create-pgpass.sh
-            subPath: 002-create-pgpass.sh
         livenessProbe:
           exec:
             command:

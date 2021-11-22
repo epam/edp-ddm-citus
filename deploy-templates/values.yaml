@@ -105,6 +105,8 @@ resources:
     memory: 1Gi
 
 citus:
+  initContainer:
+    image: busybox
   pgpassEnvVariable: /var/lib/postgresql/data/.pgpass
   serviceAccountName: citus
   securityContext:
