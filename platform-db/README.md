@@ -3,21 +3,21 @@ Liquibase scripts for platform dbs and objects
 ## Folder structure
 ```bash
 platform-db
-├── changesets                         # home for all changesets
-│   ├── audit                         #
-│   ├── excerpt                       # Folders containing sql changesets
-│   ├── postgres                      # for each database.
-│   ├── registry                      # 
-│   ├── settings                      #
-│   ├── audit-changelog.xml            #
-│   ├── excerpt-changelog.xml          # Changelog files for each database.
-│   ├── postgres-changelog.xml         # Include all the sql files from 
-│   ├── registry-changelog.xml         # the respective folders
-│   ├── settings-changelog.xml         #
-│   ├── worker-postgres-changelog.xml # Changelogs 
-│   └── worker-registry-changelog.xml # for workers
-└── run_local.sh                       # Runs update on local citus. For testing 
-└── update.sh                          # Run lb update on all DBs in order 
+├── changesets                        # ──> Home for all changesets.
+│   ├── audit                         # ┬─> Folders containing sql changesets for each database.
+│   ├── excerpt                       # │
+│   ├── postgres                      # │
+│   ├── registry                      # │
+│   ├── settings                      # ┘
+│   ├── audit-changelog.xml           # ┬─> Changelog files for each database. Include all the sql files from the respective folders.
+│   ├── excerpt-changelog.xml         # │
+│   ├── postgres-changelog.xml        # │
+│   ├── registry-changelog.xml        # │
+│   ├── settings-changelog.xml        # ┘
+│   ├── worker-postgres-changelog.xml # ┬─> Changelogs for workers.
+│   └── worker-registry-changelog.xml # ┘
+├── run_local.sh                      # ──> Runs update on local citus. For testing.
+└── update.sh                         # ──> Run lb update on all DBs in order.
 ```
 ## General rules
 XML chanlogs files generally do not need to be edited. They automatically pick up all the new sql files put into `<database name>` folders.
@@ -34,7 +34,8 @@ registry
 ├── z-post-update
 ├── 00010_init-db.sql
 ├── .................
-└── 00080_subscription.sql
+├── 00080_subscription.sql
+└── .................
 ```
 ### Procedures, views and triggers
 All procedures, views and triggers go into the respective folders in the database folder. Files name is the same as the func/view/trigger name.
@@ -46,7 +47,7 @@ The file must start with the following comment
 ```
 Example - [f_check_permissions_dcm.sql](platform-db/changesets/registry/procedures/f_check_permissions_dcm.sql)
 
-Theese files can be edited. Liquibase keeps track of the changes and runs the scripts only if they are changed compared to the previous deployment
+These files can be edited. Liquibase keeps track of the changes and runs the scripts only if they are changed compared to the previous deployment.
 
 ### z-post-update folder
 This folder contains scripts that will be run the last.
@@ -68,7 +69,7 @@ The file must start with the following comment
 ```
 Example - [00050_create-types.sql](platform-db/changesets/registry/00050_create-types.sql)
 
-This files can NOT be edited. Liquibase makes sure that theese files are executed on the target database only once and in order. 
+These files can NOT be edited. Liquibase makes sure that these files are executed on the target database only once and in order.
 ## More details on SQL Based changesets
 Formatted SQL files use comments to provide Liquibase with metadata. Each SQL file must begin with the following comment:
 ```sql
