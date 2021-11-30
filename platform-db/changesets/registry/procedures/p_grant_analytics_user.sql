@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 --changeset platform:p_grant_analytics_user splitStatements:false stripComments:false runOnChange:true
-CREATE OR REPLACE PROCEDURE p_grant_analytics_user(p_user_name text)
+CREATE OR REPLACE PROCEDURE p_grant_analytics_user(p_user_name text,p_table_name text default null)
  LANGUAGE plpgsql
 AS $procedure$
 DECLARE
@@ -24,7 +24,14 @@ DECLARE
   is_role_found integer;
   v_user_name text := replace(p_user_name, '"', '');
 BEGIN
-
+  if p_table_name is not null then
+    if not exists (select from information_schema.views 
+                   where table_name = p_table_name 
+                   and table_schema = 'registry') then
+      raise exception 'Table [%] is not found', p_table_name;
+    end if;
+    c_obj_pattern := p_table_name;
+  end if;
   -- check if role exists
   select 1
     into is_role_found
@@ -44,3 +51,5 @@ BEGIN
 $procedure$
 SECURITY DEFINER
 SET search_path = registry, public, pg_temp;
+--Drop old version if still exists
+drop procedure if exists public.p_grant_analytics_user(text);
