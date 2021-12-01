@@ -29,6 +29,15 @@ DECLARE
     l_ver_prev TEXT;
     l_ret text;
 BEGIN
+    -- check input params
+    if p_version is null then
+      raise exception 'New registry version is not set (p_version is null).';
+    end if;
+
+    if not exists (select 1 where p_version ~ '^\d+[.]\d+[.]\d+$') then
+      raise exception 'Format of the new registry version is not followed. Expecting x.x.x (for example 1.0.0).';
+    end if;
+
     -- get current version
     SELECT attribute_value INTO l_ver_curr FROM ddm_liquibase_metadata
     WHERE change_type = c_change_type AND change_name = c_change_name AND attribute_name = c_attr_curr;
