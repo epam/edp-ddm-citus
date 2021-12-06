@@ -1,6 +1,9 @@
 name: citus-chart
 
 global:
+  citus:
+    masterWorkers: 2
+    replicaWorkers: 2
   imageRegistry: defaultValue
 
 repl:
@@ -41,7 +44,6 @@ master:
 
 workers:
   name: citus-workers
-  replicas: 2
   containers:
     node_name: citus-worker
     image: citusdata/citus:10.0.2
@@ -81,7 +83,6 @@ masterReplica:
 
 workersReplica:
   name: citus-workers-rep
-  replicas: 2
   containers:
     node_name: citus-worker-rep
     image: citusdata/citus:10.0.2

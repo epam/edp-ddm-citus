@@ -76,7 +76,7 @@ spec:
         {{- $nodename := .Values.workers.containers.node_name -}}
         {{- $workersname := .Values.workers.name -}}
         {{- $containersport := .Values.workers.containers.port | toString -}}
-        {{- $replicas := .Values.workers.replicas | int -}}
+        {{- $replicas := .Values.global.citus.masterWorkers | int -}}
         {{- $workersList := list -}}
           {{- if gt $replicas 0 }}
             {{- range untilStep 0 $replicas 1 }}
@@ -91,7 +91,7 @@ spec:
         {{- $nodenamerep := .Values.workersReplica.containers.node_name -}}
         {{- $workersnamerep := .Values.workersReplica.name -}}
         {{- $containersportrep := .Values.workersReplica.containers.port | toString -}}
-        {{- $replicasrep := .Values.workersReplica.replicas | int -}}
+        {{- $replicasrep := .Values.global.citus.replicaWorkers | int -}}
         {{- $workersRepList := list -}}
           {{- if gt $replicasrep 0 }}
             {{- range untilStep 0 $replicasrep 1 }}

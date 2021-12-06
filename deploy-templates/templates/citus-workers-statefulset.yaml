@@ -9,7 +9,7 @@ spec:
     matchLabels:
       app: {{ .Values.workers.name }}
   serviceName: {{ .Values.workers.name }}
-  replicas: {{ .Values.workers.replicas }}
+  replicas: {{ .Values.global.citus.masterWorkers }}
   template:
     metadata:
       annotations:
