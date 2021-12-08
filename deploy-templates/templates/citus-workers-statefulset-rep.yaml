@@ -28,7 +28,7 @@ spec:
               /bin/ash /data/create-pgpass.sh;
               chmod 0700 -R /data/pgdata || true;
               chmod 0600 /data/.pgpass;
-              while ! nc -w 1 {{ .Values.master.name }} {{ .Values.master.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+              while ! nc -w 1 {{ .Values.masterReplica.name }} {{ .Values.masterReplica.containers.port }} </dev/null; do echo waiting for master-rep; sleep 10; done;
           env:
           {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
           {{- range $k, $v := .Values.citus.secrets.citusRolesSecrets }}
