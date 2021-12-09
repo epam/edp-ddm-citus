@@ -45,7 +45,7 @@ The file must start with the following comment
 --liquibase formatted sql
 --changeset platform:<func/view/trigger name> splitStatements:false stripComments:false runOnChange:true
 ```
-Example - [f_check_permissions_dcm.sql](platform-db/changesets/registry/procedures/f_check_permissions_dcm.sql)
+Example - [f_check_permissions_dcm.sql](../platform-db/changesets/registry/procedures/f_check_permissions_dcm.sql)
 
 These files can be edited. Liquibase keeps track of the changes and runs the scripts only if they are changed compared to the previous deployment.
 
@@ -67,7 +67,7 @@ The file must start with the following comment
 --liquibase formatted sql
 --changeset platform:<descriptive unique id>
 ```
-Example - [00050_create-types.sql](platform-db/changesets/registry/00050_create-types.sql)
+Example - [00050_create-types.sql](../platform-db/changesets/registry/00050_create-types.sql)
 
 These files can NOT be edited. Liquibase makes sure that these files are executed on the target database only once and in order.
 ## More details on SQL Based changesets
@@ -92,7 +92,7 @@ CREATE TYPE type_dml AS ENUM ('I','U','D');
 
 Liquibase allows a dynamic substitution of properties in your changelog. The tokens to replace in your changelog are described using the ${property-name} syntax.
 
-Example - [00010_init-db.sql](platform-db/changesets/registry/00010_init-db.sql)
+Example - [00010_init-db.sql](../platform-db/changesets/registry/00010_init-db.sql)
 ### Changeset attributes
 #### context:"sub" or context:"pub"
 Executes the change if the particular context was passed at runtime. We use it only for the **registry** and **postgres** DBs. There are three options: 
@@ -102,17 +102,17 @@ Executes the change if the particular context was passed at runtime. We use it o
 
 All other DBs scripts executed only on master
 
-Example [00040_create-other-roles.sql](platform-db/changesets/postgres/00040_create-other-roles.sql)
+Example [00040_create-other-roles.sql](../platform-db/changesets/postgres/00040_create-other-roles.sql)
 #### runOnChange:true
 Executes the change the first time it is seen and each time the changeset has been changed. We use it for procedures, views and triggers.
 #### runInTransaction:false
 Specifies whether the changeset can be run as a single transaction. We use it for statements that cannot be run in transaction, such as ```create database``` or ```create subscription```
 
-Example - [00060_create-registry.sql](platform-db/changesets/postgres/00060_create-registry.sql)
+Example - [00060_create-registry.sql](../platform-db/changesets/postgres/00060_create-registry.sql)
 #### splitStatements:false 
 Removes Liquibase split statements on ;'s and GO's when it is set to false. We use it for procedures and anonimous PL/pgSQL blocks
 
-Example - [00020_register-workers.sql](platform-db/changesets/registry/00020_register-workers.sql)
+Example - [00020_register-workers.sql](../platform-db/changesets/registry/00020_register-workers.sql)
 #### stripComments:false
 Removes any comments in the SQL before executing when it is set to true. Used for procedures, views and triggers to preserve comments. 
 #### --validCheckSum: ANY
@@ -120,5 +120,5 @@ Valid checksum is a checksum which is valid for a specific changeset, regardless
 
 Because liquibase computes the check sum after the parameter substitution it can fail the check if parameter is changed. **ANY** makes liquibase skip checksum check. 
 
-Example - [00010_create-audit.sql](platform-db/changesets/postgres/00010_create-audit.sql)
+Example - [00010_create-audit.sql](../platform-db/changesets/postgres/00010_create-audit.sql)
 ### Learn more at [changelogs in SQL Format](https://docs.liquibase.com/concepts/basic/sql-format.html)
