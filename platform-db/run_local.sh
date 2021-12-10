@@ -26,6 +26,8 @@ export pubUser="postgres"
 export pubPort="5432"
 export histRoleName="historical_data_role"
 export histRolePass="historical_data_role"
+export processHistoryRoleName="process_history_role"
+export processHistoryRolePass="process_history_role"
 #DB
 export DB_NAME="postgres"
 export DB_PASS="postgres"

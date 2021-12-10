@@ -136,6 +136,7 @@ citus:
       appRole: application_role
       admRole: admin_role
       histRole: historical_data_role
+      processHistoryRole: process_history_role
 
   url:
     masterDBurl: jdbc:postgresql://citus-master:5432
