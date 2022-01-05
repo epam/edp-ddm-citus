@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Values.workers.containers.node_name }}
+  name: {{ .Values.citus.workersConfig.containers.nodeName }}
   labels:
-    app: {{ .Values.workers.name }}
+    app: {{ .Values.citus.workersConfig.name }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.workers.name }}
-  serviceName: {{ .Values.workers.name }}
+      app: {{ .Values.citus.workersConfig.name }}
+  serviceName: {{ .Values.citus.workersConfig.name }}
   replicas: {{ .Values.global.citus.masterWorkers }}
   template:
     metadata:
       annotations:
-        backup.velero.io/backup-volumes: {{ .Values.workers.volumes.name }}
+        backup.velero.io/backup-volumes: {{ .Values.citus.workersConfig.volumes.name }}
         sidecar.istio.io/inject: "false"
       labels:
-        app: {{ .Values.workers.name }}
+        app: {{ .Values.citus.workersConfig.name }}
     spec:
       initContainers:
         - name: init-chown-data
@@ -28,30 +28,30 @@ spec:
               chmod 0600 /data/.pgpass;
               /bin/ash /data/create-pgpass.sh;
               chmod 0700 -R /data/pgdata || true;
-              while ! nc -w 1 {{ .Values.master.name }} {{ .Values.master.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+              while ! nc -w 1 {{ .Values.citus.mastersConfig.name }} {{ .Values.citus.mastersConfig.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.master.containers.env.pgsecret_name }}
-                  key: {{ .Values.master.containers.env.pgsecret_key }}
+                  name: {{ .Values.citus.mastersConfig.containers.env.pgsecret_name }}
+                  key: {{ .Values.citus.mastersConfig.containers.env.pgsecret_key }}
           volumeMounts:
-            - name: {{ .Values.workers.volumes.name }}
+            - name: {{ .Values.citus.workersConfig.volumes.name }}
               mountPath: /data
-            - name: pgpass
+            - name: {{ .Values.citus.secrets.pgPassConfigMapName }}
               mountPath: /data/create-pgpass.sh
               subPath: create-pgpass.sh
       containers:
-      - name: {{ .Values.workers.containers.node_name }}
+      - name: {{ .Values.citus.workersConfig.containers.nodeName }}
         resources:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
-        image: {{ template "imageRegistry" . -}} {{ .Values.workers.containers.image }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.citus.mastersConfig.containers.image }}
         imagePullPolicy: IfNotPresent
         command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
         ports:
-        - containerPort: {{ .Values.workers.containers.port }}
+        - containerPort: {{ .Values.citus.workersConfig.containers.port }}
         env:
         - name: POD_IP
           valueFrom:
@@ -60,32 +60,32 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.workers.containers.env.pgsecret_name }}
-              key: {{ .Values.workers.containers.env.pgsecret_key }}
+              name: {{ .Values.citus.mastersConfig.containers.env.pgsecret_name }}
+              key: {{ .Values.citus.mastersConfig.containers.env.pgsecret_key }}
         - name: PGDATA
-          value: {{ .Values.workers.containers.env.pgdata_value }}
+          value: {{ .Values.citus.mastersConfig.containers.env.pgdata_value }}
         - name: PGPASSFILE
           value: {{ .Values.citus.pgpassEnvVariable }}
         volumeMounts:
-        - name: {{ .Values.workers.containers.volumeMounts.name }}
-          mountPath: {{ .Values.workers.containers.volumeMounts.mountPath }}
-        - name: pg-conf
+        - name: {{ .Values.citus.mastersConfig.containers.volumeMounts.name }}
+          mountPath: {{ .Values.citus.mastersConfig.containers.volumeMounts.mountPath }}
+        - name: {{ .Values.citus.pgConfig.name }}
           mountPath: /etc/postgresql
         livenessProbe:
           exec:
             command:
             - ./pg_healthcheck
           initialDelaySeconds: 60
-      - name: {{ .Values.workers.containers.node_name }}-sidecar
-        image: {{ template "imageRegistry" . -}} {{ .Values.workers.containers.image }}
+      - name: {{ .Values.citus.workersConfig.containers.nodeName }}-sidecar
+        image: {{ template "imageRegistry" . -}} {{ .Values.citus.mastersConfig.containers.image }}
         imagePullPolicy: IfNotPresent
         command:
           - 'sh'
           - '-c'
           - | 
-            while ! ./pg_healthcheck; do echo pg not ready; sleep 20; done ; psql --host={{ .Values.master.name }} --username=${PSQL_USER} --command="SELECT * from master_add_node('${HOSTNAME}.{{ .Values.workers.name }}', {{ .Values.workers.containers.port }});" ; while true; do trap : TERM INT; sleep 9999999999d & wait ; done
+            while ! ./pg_healthcheck; do echo pg not ready; sleep 20; done ; psql --host={{ .Values.citus.mastersConfig.name }} --username=${PSQL_USER} --command="SELECT * from master_add_node('${HOSTNAME}.{{ .Values.citus.workersConfig.name }}', {{ .Values.citus.workersConfig.containers.port }});" ; while true; do trap : TERM INT; sleep 9999999999d & wait ; done
         ports:
-        - containerPort: {{ .Values.workers.containers.port }}
+        - containerPort: {{ .Values.citus.workersConfig.containers.port }}
         env:
         - name: POD_IP
           valueFrom:
@@ -94,32 +94,32 @@ spec:
         - name: PSQL_USER  
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.workers.containers.env.pgsecret_name }}
-              key: {{ .Values.master.containers.env.user_name }}
+              name: {{ .Values.citus.mastersConfig.containers.env.pgsecret_name }}
+              key: {{ .Values.citus.mastersConfig.containers.env.user_name }}
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.workers.containers.env.pgsecret_name }}
-              key: {{ .Values.workers.containers.env.pgsecret_key }}
+              name: {{ .Values.citus.mastersConfig.containers.env.pgsecret_name }}
+              key: {{ .Values.citus.mastersConfig.containers.env.pgsecret_key }}
         - name: PGDATA
-          value: {{ .Values.workers.containers.env.pgdata_value }}
+          value: {{ .Values.citus.mastersConfig.containers.env.pgdata_value }}
       securityContext:
         runAsUser: {{ .Values.citus.securityContext.runAsUser }}
         fsGroup: {{ .Values.citus.securityContext.fsGroup }}
       serviceAccountName: {{ .Values.citus.serviceAccountName }}
       volumes:
-        - name: pg-conf
+        - name: {{ .Values.citus.pgConfig.name }}
           configMap:
-            name: pgconfig
-        - name: pgpass
+            name: {{ .Values.citus.pgConfig.configMapName }}
+        - name: {{ .Values.citus.secrets.pgPassConfigMapName }}
           configMap:
-            name: pgpass
+            name: {{ .Values.citus.secrets.pgPassConfigMapName }}
   volumeClaimTemplates:
   - metadata:
-      name: {{ .Values.workers.volumes.name }}
+      name: {{ .Values.citus.workersConfig.volumes.name }}
     spec:
       storageClassName: {{ .Values.storageClass }}
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: {{ .Values.workers.volumes.size }}
+          storage: {{ .Values.citus.workersConfig.volumes.size }}

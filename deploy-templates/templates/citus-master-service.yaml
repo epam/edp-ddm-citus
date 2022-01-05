@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.master.name }}
+  name: {{ .Values.citus.mastersConfig.name }}
   labels:
-    app: {{ .Values.master.name }}
+    app: {{ .Values.citus.mastersConfig.name }}
 spec:
   selector:
-    app: {{ .Values.master.name }}
+    app: {{ .Values.citus.mastersConfig.name }}
   clusterIP: None
   ports:
-  - port: {{ .Values.master.containers.port }}
+  - port: {{ .Values.citus.mastersConfig.containers.port }}

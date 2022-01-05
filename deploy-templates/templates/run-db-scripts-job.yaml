@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "run-db-scripts-job"
+  name: {{ .Values.citus.jobName }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:
@@ -19,9 +19,9 @@ spec:
             - sh
             - '-c'
             - >-
-              while ! nc -w 1 {{ .Values.master.name }} {{ .Values.master.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
+              while ! nc -w 1 {{ .Values.citus.mastersConfig.name }} {{ .Values.citus.mastersConfig.containers.port }} </dev/null; do echo waiting for master; sleep 10; done;
       containers:
-      - name: run-db-scripts-job
+      - name: {{ .Values.citus.jobName }}
         image: {{ .Values.image.name  }}:{{ .Values.image.version }}
         imagePullPolicy: IfNotPresent
         workingDir: /liquibase/platform-db
@@ -29,7 +29,7 @@ spec:
           - sh
           - '-c'
           - >-
-            bash update.sh 
+            bash update.sh
         env:
         {{- $rolesSecret := .Values.citus.secrets.citusSecrets.rolesSecret }}
         {{- range $k,$v := .Values.citus.secrets.citusRolesSecrets }}
@@ -73,9 +73,9 @@ spec:
           - name: pubPort
             value: {{ .Values.citus.pubPort | quote }}
         {{- $urlprefix := "jdbc:postgresql://" -}}
-        {{- $nodename := .Values.workers.containers.node_name -}}
-        {{- $workersname := .Values.workers.name -}}
-        {{- $containersport := .Values.workers.containers.port | toString -}}
+        {{- $nodename := .Values.citus.workersConfig.containers.nodeName -}}
+        {{- $workersname := .Values.citus.workersConfig.name -}}
+        {{- $containersport := .Values.citus.workersConfig.containers.port | toString -}}
         {{- $replicas := .Values.global.citus.masterWorkers | int -}}
         {{- $workersList := list -}}
           {{- if gt $replicas 0 }}
@@ -88,9 +88,9 @@ spec:
           - name: masterWorkers
             value: ""
         {{- end }}
-        {{- $nodenamerep := .Values.workersReplica.containers.node_name -}}
-        {{- $workersnamerep := .Values.workersReplica.name -}}
-        {{- $containersportrep := .Values.workersReplica.containers.port | toString -}}
+        {{- $nodenamerep := .Values.citus.workersConfig.containers.replicaNodeName -}}
+        {{- $workersnamerep := .Values.citus.workersConfig.replicaName -}}
+        {{- $containersportrep := .Values.citus.workersConfig.containers.port | toString -}}
         {{- $replicasrep := .Values.global.citus.replicaWorkers | int -}}
         {{- $workersRepList := list -}}
           {{- if gt $replicasrep 0 }}

@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.masterReplica.name }}
+  name: {{ .Values.citus.mastersConfig.replicaName }}
   labels:
-    app: {{ .Values.masterReplica.name }}
+    app: {{ .Values.citus.mastersConfig.replicaName }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.masterReplica.name }}
-  replicas: {{ .Values.masterReplica.replicas }}
+      app: {{ .Values.citus.mastersConfig.replicaName }}
+  replicas: {{ .Values.citus.mastersConfig.replicaReplicas }}
   strategy:
     type: Recreate
   template:
     metadata:
       annotations:
-        backup.velero.io/backup-volumes: {{ .Values.masterReplica.volumes.name }}
+        backup.velero.io/backup-volumes: {{ .Values.citus.mastersConfig.volumes.name }}
         sidecar.istio.io/inject: "false"
       labels:
-        app: {{ .Values.masterReplica.name }}
+        app: {{ .Values.citus.mastersConfig.replicaName }}
     spec:
       initContainers:
         - name: init-chown-data
@@ -43,41 +43,41 @@ spec:
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
-                key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
+                name: {{ .Values.citus.mastersConfig.containers.env.pgsecret_name }}
+                key: {{ .Values.citus.mastersConfig.containers.env.pgsecret_key }}
           volumeMounts:
-            - name: {{ .Values.masterReplica.volumes.name }}
+            - name: {{ .Values.citus.mastersConfig.containers.volumeMounts.name }}
               mountPath: /data
-            - name: pgpass
+            - name: {{ .Values.citus.secrets.pgPassConfigMapName }}
               mountPath: /data/create-pgpass.sh
               subPath: create-pgpass.sh
       containers:
-      - name: {{ .Values.masterReplica.containers.name }}
+      - name: {{ .Values.citus.mastersConfig.containers.name }}
         resources:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
-        image: {{ template "imageRegistry" . -}} {{ .Values.masterReplica.containers.image }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.citus.mastersConfig.containers.image }}
         imagePullPolicy: IfNotPresent
         command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
         ports:
-        - containerPort: {{ .Values.masterReplica.containers.port }}
+        - containerPort: {{ .Values.citus.mastersConfig.containers.port }}
         env:
         - name: PGDATA
-          value: {{ .Values.masterReplica.containers.env.pgdata_value }}
+          value: {{ .Values.citus.mastersConfig.containers.env.pgdata_value }}
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.masterReplica.containers.env.pgsecret_name }}
-              key: {{ .Values.masterReplica.containers.env.pgsecret_key }}
+              name: {{ .Values.citus.mastersConfig.containers.env.pgsecret_name }}
+              key: {{ .Values.citus.mastersConfig.containers.env.pgsecret_key }}
         - name: PGTZ
           value: {{ .Values.database.timezone }}
         - name: PGPASSFILE
           value: {{ .Values.citus.pgpassEnvVariable }}
         volumeMounts:
-        - name: {{ .Values.masterReplica.containers.volumeMounts.name }}
-          mountPath: {{ .Values.masterReplica.containers.volumeMounts.mountPath }}
-        - name: pg-conf
+        - name: {{ .Values.citus.mastersConfig.containers.volumeMounts.name }}
+          mountPath: {{ .Values.citus.mastersConfig.containers.volumeMounts.mountPath }}
+        - name: {{ .Values.citus.pgConfig.name }}
           mountPath: /etc/postgresql
         livenessProbe:
           exec:
@@ -89,15 +89,12 @@ spec:
         fsGroup: {{ .Values.citus.securityContext.fsGroup }}
       serviceAccountName: {{ .Values.citus.serviceAccountName }}
       volumes:
-        - name: {{ .Values.masterReplica.volumes.name }}
+        - name: {{ .Values.citus.mastersConfig.volumes.name }}
           persistentVolumeClaim:
-            claimName: {{ .Values.masterReplica.volumes.claimName }}
-        - name: pg-conf
+            claimName: {{ .Values.citus.mastersConfig.volumes.replicaClaimName }}
+        - name: {{ .Values.citus.pgConfig.name }}
           configMap:
-            name: pgconfig
-        - name: pgpass
+            name: {{ .Values.citus.pgConfig.configMapName }}
+        - name: {{ .Values.citus.secrets.pgPassConfigMapName }}
           configMap:
-            name: pgpass
-        - name: citus-create-roles
-          configMap:
-            name: citus-create-roles
+            name: {{ .Values.citus.secrets.pgPassConfigMapName }}

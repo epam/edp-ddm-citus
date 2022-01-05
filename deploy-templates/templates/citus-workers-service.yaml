@@ -3,13 +3,13 @@ kind: Service
 metadata:
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  name: {{ .Values.workers.name }}
+  name: {{ .Values.citus.workersConfig.name }}
   labels:
-    app: {{ .Values.workers.name }}
+    app: {{ .Values.citus.workersConfig.name }}
 spec:
   selector:
-    app: {{ .Values.workers.name }}
+    app: {{ .Values.citus.workersConfig.name }}
   clusterIP: None
   ports:
-  - port: {{ .Values.workers.containers.port }}
+  - port: {{ .Values.citus.workersConfig.containers.port }}
   publishNotReadyAddresses: true

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: pgpass
+  name: {{ .Values.citus.secrets.pgPassConfigMapName }}
 data:
   create-pgpass.sh: |
     #!/bin/ash -ev

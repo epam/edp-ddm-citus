@@ -1,13 +1,10 @@
-name: citus-chart
+name: citus
 
 global:
   citus:
     masterWorkers: 2
     replicaWorkers: 2
   imageRegistry: defaultValue
-
-repl:
-  name: citus-chart-rep
 
 namespace: ""
 cdPipelineName: ""
@@ -22,82 +19,6 @@ image:
   name: citus-chart
   version: latest
 
-master:
-  name: citus-master
-  replicas: 1
-  containers:
-    name: citus
-    image: citusdata/citus:10.0.2
-    port: 5432
-    env:
-      pgdata_value: /var/lib/postgresql/data/pgdata
-      user_name: username
-      pgsecret_name: citus-secrets
-      pgsecret_key: password
-    volumeMounts:
-      name: storage
-      mountPath: /var/lib/postgresql/data
-  volumes:
-    name: storage
-    claimName: citus-master-pvc
-    size: 5Gi
-
-workers:
-  name: citus-workers
-  containers:
-    node_name: citus-worker
-    image: citusdata/citus:10.0.2
-    port: 5432
-    env:
-      pgdata_value: /var/lib/postgresql/data/pgdata
-      pgsecret_name: citus-secrets
-      pgsecret_key: password
-    volumeMounts:
-      name: storage
-      mountPath: /var/lib/postgresql/data
-  volumes:
-    name: storage
-    size: 5Gi
-secret:
-  name: citus-secrets
-
-masterReplica:
-  name: citus-master-rep
-  replicas: 1
-  containers:
-    name: citus
-    image: citusdata/citus:10.0.2
-    port: 5432
-    env:
-      pgdata_value: /var/lib/postgresql/data/pgdata
-      user_name: username
-      pgsecret_name: citus-secrets
-      pgsecret_key: password
-    volumeMounts:
-      name: storage
-      mountPath: /var/lib/postgresql/data
-  volumes:
-    name: storage
-    claimName: citus-master-rep-pvc
-    size: 5Gi
-
-workersReplica:
-  name: citus-workers-rep
-  containers:
-    node_name: citus-worker-rep
-    image: citusdata/citus:10.0.2
-    port: 5432
-    env:
-      pgdata_value: /var/lib/postgresql/data/pgdata
-      pgsecret_name: citus-secrets
-      pgsecret_key: password
-    volumeMounts:
-      name: storage
-      mountPath: /var/lib/postgresql/data
-  volumes:
-    name: storage
-    size: 5Gi
-
 storageClass: gp2
 
 resources:
@@ -106,6 +27,42 @@ resources:
     memory: 1Gi
 
 citus:
+  mastersConfig:
+    name: citus-master
+    replicaName: citus-master-rep
+    replicas: 1
+    replicaReplicas: 1
+    containers:
+      name: citus
+      image: citusdata/citus:10.0.2
+      port: 5432
+      env:
+        pgdata_value: /var/lib/postgresql/data/pgdata
+        user_name: username
+        pgsecret_name: citus-secrets
+        pgsecret_key: password
+      volumeMounts:
+        name: storage
+        mountPath: /var/lib/postgresql/data
+    volumes:
+      name: storage
+      claimName: citus-master-pvc
+      replicaClaimName: citus-master-rep-pvc
+      size: 5Gi
+      replicaSize: 5Gi
+  workersConfig:
+    name: citus-workers
+    replicaName: citus-workers-rep
+    containers:
+      nodeName: citus-worker
+      replicaNodeName: citus-worker-rep
+      port: 5432
+    volumes:
+      name: storage
+      size: 5Gi
+      replicaSize: 5Gi
+  postgresSecret:
+    name: citus-secrets
   initContainer:
     image: busybox
   pgpassEnvVariable: /var/lib/postgresql/data/.pgpass
@@ -137,7 +94,12 @@ citus:
       admRole: admin_role
       histRole: historical_data_role
       processHistoryRole: process_history_role
-
+    pgPassConfigMapName: pgpass
   url:
     masterDBurl: jdbc:postgresql://citus-master:5432
     replicaDBurl: jdbc:postgresql://citus-master-rep:5432
+  pgConfig:
+    name: pg-conf
+    mountPath: /etc/postgresql
+    configMapName: pgconfig
+  jobName: run-db-scripts-job
