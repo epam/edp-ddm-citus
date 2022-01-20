@@ -18,10 +18,13 @@
 CREATE OR REPLACE PROCEDURE p_create_analytics_user(p_user_name TEXT, p_user_pwd TEXT)
  LANGUAGE plpgsql
 AS $procedure$
+DECLARE
+  v_user_name text := replace(p_user_name, '"', '');
 BEGIN
+  v_user_name :='"'||v_user_name||'"'; 
 
-  EXECUTE 'CREATE ROLE ' || p_user_name || ' LOGIN PASSWORD ''' || p_user_pwd || ''';';
-  EXECUTE 'GRANT CONNECT ON DATABASE ' || current_database() || ' TO ' || p_user_name || ';';
+  EXECUTE 'CREATE ROLE ' || v_user_name || ' LOGIN PASSWORD ''' || p_user_pwd || ''';';
+  EXECUTE 'GRANT CONNECT ON DATABASE ' || current_database() || ' TO ' || v_user_name || ';';
 
  END;
 $procedure$
