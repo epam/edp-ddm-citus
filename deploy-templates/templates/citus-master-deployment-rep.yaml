@@ -22,10 +22,13 @@ spec:
       initContainers:
         - name: init-chown-data
           image: {{ template "imageRegistry" . -}} {{ .Values.citus.initContainer.image }}
+          securityContext:
+            runAsUser: 0
           command:
             - sh
             - '-c'
             - >-
+              chown 999 -R /data/pgdata || true;
               chmod 0700 -R /data/pgdata || true;
               /bin/ash /data/create-pgpass.sh;
               chmod 0600 /data/.pgpass;

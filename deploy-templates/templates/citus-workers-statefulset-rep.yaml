@@ -21,10 +21,13 @@ spec:
       initContainers:
         - name: init-chown-data
           image: {{ template "imageRegistry" . -}} {{ .Values.citus.initContainer.image }}
+          securityContext:
+            runAsUser: 0
           command:
             - sh
             - '-c'
             - >-
+              chown 999 -R /data/pgdata || true;
               /bin/ash /data/create-pgpass.sh;
               chmod 0700 -R /data/pgdata || true;
               chmod 0600 /data/.pgpass;
@@ -82,7 +85,7 @@ spec:
         command:
           - 'sh'
           - '-c'
-          - | 
+          - |
             while ! ./pg_healthcheck; do echo pg not ready; sleep 20; done ; psql --host={{ .Values.citus.mastersConfig.replicaName }} --username=${PSQL_USER} --command="SELECT * from master_add_node('${HOSTNAME}.{{ .Values.citus.workersConfig.replicaName }}', {{ .Values.citus.workersConfig.containers.port }});" ; while true; do trap : TERM INT; sleep 9999999999d & wait ; done
         ports:
         - containerPort: {{ .Values.citus.workersConfig.containers.port }}
