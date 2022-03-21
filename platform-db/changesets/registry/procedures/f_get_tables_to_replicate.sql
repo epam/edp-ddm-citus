@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION f_get_tables_to_replicate(p_publication_name TEXT)
  LANGUAGE plpgsql
 AS $function$
 BEGIN
-  RETURN (SELECT string_agg(table_name, ', ')
+  RETURN (SELECT string_agg('"'||table_name||'"', ', ')
             FROM (
                     SELECT table_name
                     FROM information_schema.tables
