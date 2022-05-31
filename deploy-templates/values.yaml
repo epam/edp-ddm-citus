@@ -104,4 +104,5 @@ citus:
     name: pg-conf
     mountPath: /etc/postgresql
     configMapName: pgconfig
+    logLevel: warning
   jobName: run-db-scripts-job
