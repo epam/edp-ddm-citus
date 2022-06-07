@@ -34,7 +34,7 @@ citus:
     replicaReplicas: 1
     containers:
       name: citus
-      image: citusdata/citus:10.0.2
+      image: citus-data-main:0.1.5-SNAPSHOT.4
       port: 5432
       env:
         pgdata_value: /var/lib/postgresql/data/pgdata

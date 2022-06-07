@@ -50,7 +50,7 @@ spec:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
-        image: {{ template "imageRegistry" . -}} {{ .Values.citus.mastersConfig.containers.image }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.edpProject }}/{{ .Values.citus.mastersConfig.containers.image }}
         imagePullPolicy: IfNotPresent
         command: [ "docker-entrypoint.sh", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
         ports:
@@ -80,7 +80,7 @@ spec:
             - ./pg_healthcheck
           initialDelaySeconds: 60
       - name: {{ .Values.citus.workersConfig.containers.replicaNodeName }}-sidecar
-        image: {{ template "imageRegistry" . -}} {{ .Values.citus.mastersConfig.containers.image }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.edpProject }}/{{ .Values.citus.mastersConfig.containers.image }}
         imagePullPolicy: IfNotPresent
         command:
           - 'sh'
