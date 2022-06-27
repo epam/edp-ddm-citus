@@ -6,11 +6,13 @@ platform-db
 ├── changesets                        # ──> Home for all changesets.
 │   ├── audit                         # ┬─> Folders containing sql changesets for each database.
 │   ├── excerpt                       # │
+│   ├── notifications                 # │
 │   ├── postgres                      # │
 │   ├── registry                      # │
 │   ├── settings                      # ┘
 │   ├── audit-changelog.xml           # ┬─> Changelog files for each database. Include all the sql files from the respective folders.
 │   ├── excerpt-changelog.xml         # │
+│   ├── notifications-changelog.xml   # │
 │   ├── postgres-changelog.xml        # │
 │   ├── registry-changelog.xml        # │
 │   ├── settings-changelog.xml        # ┘
