@@ -32,6 +32,8 @@ export histRoleName="historical_data_role"
 export histRolePass="historical_data_role"
 export processHistoryRoleName="process_history_role"
 export processHistoryRolePass="process_history_role"
+export geoserverRoleName="geoserver_role"
+export geoserverRolePass="geoserver_role"
 #DB
 export DB_NAME="postgres"
 export DB_PASS="postgres"
