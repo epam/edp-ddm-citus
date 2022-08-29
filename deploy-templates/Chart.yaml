@@ -1,4 +1,7 @@
 apiVersion: v2
-description: Helm chart for other application/service deploying
-name: citus-chart
-version: 0.0.1
+name: citus
+description: Installer for PGO, the open source Postgres Operator from Crunchy Data
+
+type: application
+version: 0.3.0
+appVersion: 5.1.0
