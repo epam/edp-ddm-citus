@@ -1,4 +1,6 @@
 --liquibase formatted sql
+--changeset platform:init-citus
+create extension if not exists citus;
 
 --changeset platform:create-archive-schema
 create schema if not exists ${archiveSchema};

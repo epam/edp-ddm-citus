@@ -26,3 +26,4 @@ SELECT replace(replace(replace($1
 $function$
 ;
 
+SELECT create_distributed_function('f_like_escape(text)');
